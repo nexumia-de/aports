@@ -7,6 +7,7 @@ GitHub Actions and published as a signed apk repository at
 | Package | Source |
 |---|---|
 | `android-translation-layer` | [nexumia-de/android_translation_layer](https://github.com/nexumia-de/android_translation_layer), branch `phosh`: Android Translation Layer with the fixes for Phosh |
+| `art_standalone` | Alpine's package plus a wolfssljni fix that F-Droid needs in ATL; temporary, until Alpine has it ([details](docs/repository.md#packages)) |
 
 ## Use
 
