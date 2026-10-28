@@ -1,0 +1,50 @@
+# Daily: pin every package to the newest commit of its source branch
+# (scripts/update.sh) and open one pull request per package.
+#
+# Pull requests opened with the default GITHUB_TOKEN do not trigger
+# workflows, so CI would not build them. Store a fine-grained token as
+# secret UPDATE_TOKEN (repository access: aports; permissions: contents
+# and pull requests read and write) to get CI on these pull requests;
+# without it, run "Publish" by hand on the branch. With the default token,
+# "Allow GitHub Actions to create and approve pull requests" must be on.
+name: Update check
+
+on:
+  schedule:
+    - cron: '41 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          token: ${{ secrets.UPDATE_TOKEN || github.token }}
+
+      - name: Update pins
+        env:
+          GH_TOKEN: ${{ secrets.UPDATE_TOKEN || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for apkbuild in */APKBUILD; do
+            pkg=${apkbuild%/APKBUILD}
+            branch=update/$pkg
+            git checkout -q main
+            version=$(scripts/update.sh "$pkg")
+            [ -n "$version" ] || continue
+            # One branch per package; a newer commit replaces the open pull request's content.
+            git checkout -q -B "$branch"
+            git commit -q -am "$pkg: update to $version"
+            git push -q --force origin "$branch"
+            if ! gh pr list --head "$branch" --state open --json number --jq '.[].number' | grep -q .; then
+              gh pr create --base main --head "$branch" --title "$pkg: update to $version" \
+                --body "Pins \`$pkg\` to the newest commit of its source branch (scripts/update.sh)."
+            fi
+          done

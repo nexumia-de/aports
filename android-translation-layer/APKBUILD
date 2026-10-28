@@ -1,0 +1,58 @@
+# Contributor: nexumia-de <https://github.com/nexumia-de>
+# Based on Alpine's testing/android-translation-layer and upstream's
+# nightly APKBUILD (JDK 17 and -Ddownload_tool_deps=true for
+# tools/jni_upcall_gen). _commit and pkgver are updated by
+# scripts/update.sh.
+pkgname=android-translation-layer
+pkgver=0_git20261028094753
+pkgrel=0
+_commit="0b2f659ac5da916d6f4997801bc0e4182a874720"
+pkgdesc="A translation layer for running Android apps on a Linux system (nexumia-de Phosh fork)"
+url="https://github.com/nexumia-de/android_translation_layer"
+arch="aarch64"
+license="GPL-3.0-only"
+# libopensles-standalone is not strictly required but some Android applications depend on it
+depends="libopensles-standalone"
+makedepends="
+	alsa-lib-dev
+	art_standalone-dev
+	bionic_translation-dev
+	ffmpeg-dev
+	fontconfig-dev
+	glib-dev
+	gtk4-layer-shell-dev
+	gtk4.0-dev
+	java-common
+	libandroidfw-dev
+	libgudev-dev
+	libportal-dev
+	libsecret-dev
+	maven
+	meson
+	openjdk17-jdk
+	openxr-dev
+	vulkan-loader-dev
+	webkit2gtk-6.0-dev
+	"
+# maven downloads the Java libraries of tools/jni_upcall_gen
+options="net"
+source="android_translation_layer-$_commit.tar.gz::https://github.com/nexumia-de/android_translation_layer/archive/$_commit.tar.gz"
+builddir="$srcdir/android_translation_layer-$_commit"
+
+build() {
+	abuild-meson -Ddownload_tool_deps=true \
+		. output
+	meson compile -C output
+}
+
+check() {
+	meson test --print-errorlogs -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+}
+
+sha512sums="
+63f0ecce1ac2fb2449a866f7c84c52892bd5c63572051441c1ec55361f03029c336aeaf113e480deee56023e3a79f01a5c5cb28778474c2e5fcf8adb3160586f  android_translation_layer-0b2f659ac5da916d6f4997801bc0e4182a874720.tar.gz
+"
