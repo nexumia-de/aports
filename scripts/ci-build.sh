@@ -10,14 +10,15 @@ echo https://dl-cdn.alpinelinux.org/alpine/edge/testing >>/etc/apk/repositories
 apk upgrade --update-cache --no-cache
 apk add --no-cache alpine-sdk
 
+export PACKAGER="GitHub Actions <41898282+github-actions[bot]@users.noreply.github.com>"
 if ls /keys/*.rsa >/dev/null 2>&1; then
 	PACKAGER_PRIVKEY=$(ls /keys/*.rsa)
-	cp "$PACKAGER_PRIVKEY.pub" /etc/apk/keys/
 else
-	abuild-keygen -n -i -a
+	# abuild-keygen -i would call doas, which the container lacks.
+	abuild-keygen -n -a
 	. "$HOME/.config/abuild/abuild.conf"
 fi
 export PACKAGER_PRIVKEY
-export PACKAGER="GitHub Actions <41898282+github-actions[bot]@users.noreply.github.com>"
+cp "$PACKAGER_PRIVKEY.pub" /etc/apk/keys/
 
 /src/scripts/build.sh /out -F -r
