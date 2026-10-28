@@ -80,6 +80,9 @@ with custom domain `apk.nexumia.de`[^pages-domain], key pair
 `nexumia-de-20261028.rsa` (RSA 4096, created by the owner; public part in
 `keys/`), and the environment `apk-signing` with deployment branch
 `main` and the environment secret `APK_SIGNING_KEY`[^environments].
+Pull request #1 was merged and published the first package; the
+published `edge/aarch64/APKINDEX.tar.gz` verifies with the public key
+(`apk --keys-dir <dir> verify`) and is untrusted without it.
 
 Still to do:
 
@@ -87,13 +90,11 @@ Still to do:
    administrators to bypass configured protection rules" off (the
    agent's token acts as the owner's admin account). Not confirmed on
    2026-10-28.
-2. Merge pull request #1; the first publish then waits for the
-   reviewer's approval under Actions.
-3. "Enforce HTTPS" in the Pages settings once the certificate exists.
-4. Optional: secret `UPDATE_TOKEN` (see `update-check.yml`) so CI builds
+2. "Enforce HTTPS" in the Pages settings once the certificate exists.
+3. Optional: secret `UPDATE_TOKEN` (see `update-check.yml`) so CI builds
    the update pull requests; otherwise the setting "Allow GitHub Actions
    to create and approve pull requests" must be on.
-5. On the device, as root (the owner runs root commands with `sudo`):
+4. On the device, as root (the owner runs root commands with `sudo`):
    ```sh
    wget -O /etc/apk/keys/nexumia-de-20261028.rsa.pub https://apk.nexumia.de/keys/nexumia-de-20261028.rsa.pub
    echo "@nexumia https://apk.nexumia.de/edge" >> /etc/apk/repositories
