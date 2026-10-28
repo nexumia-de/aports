@@ -1,0 +1,48 @@
+# Contributor: nexumia-de <https://github.com/nexumia-de>
+# Alpine's testing/bionic_translation (alpinelinux/aports f35539597b0e)
+# plus register-atfork-strncat-chk.patch, which DB Navigator's native
+# libraries need. Drop this package once Alpine's bionic_translation
+# contains the fix.
+pkgname=bionic_translation
+pkgver=0_git20260927
+# above any rebuild of the same version in Alpine (r0, r1, ...)
+pkgrel=100
+_commit="6253dec7f24a57a94039a088cb436d880e92e3be"
+pkgdesc="A set of libraries for loading bionic-linked .so files on musl/glibc (nexumia-de: atfork and strncat_chk)"
+url="https://gitlab.com/android_translation_layer/bionic_translation"
+arch="aarch64"
+license="Apache-2.0"
+makedepends="
+	elfutils-dev
+	libbsd-dev
+	libunwind-dev
+	mesa-dev
+	meson
+	samurai
+	"
+checkdepends="bubblewrap"
+subpackages="$pkgname-dev $pkgname-dbg"
+source="https://gitlab.com/android_translation_layer/bionic_translation/-/archive/$_commit/bionic_translation-$_commit.tar.gz
+	register-atfork-strncat-chk.patch
+	"
+options="!check" # Tests require bubblewrap which can not run in CI/containerized environments
+builddir="$srcdir/bionic_translation-$_commit"
+
+build() {
+	abuild-meson \
+		. output
+	meson compile -C output
+}
+
+check() {
+	meson test --print-errorlogs -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+}
+
+sha512sums="
+e15ed7c3003d96f14d3a40ef239e1d21969b5165c02c6584fd2135b8e58cb2e19cb4a05c4d6bb121cd05457d8e8a96a7e85c2674c83827aae69e92418b2c2d91  bionic_translation-6253dec7f24a57a94039a088cb436d880e92e3be.tar.gz
+b13dc0cdc78c5dfc9c057ae8f49a3dab279850bdd421e5413c0beb67d25aa5dba216590f6d45d7b0c41a490a71d2359b2fc6d87abb3a7ad4f732db8e74fa53a0  register-atfork-strncat-chk.patch
+"

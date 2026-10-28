@@ -1,0 +1,42 @@
+From: nexumia-de <https://github.com/nexumia-de>
+Subject: Add __register_atfork and __strncat_chk
+
+Both are called by libraries built with current NDKs: pthread_atfork in
+the NDK's libc.a calls bionic's __register_atfork, and FORTIFY turns
+strncat into __strncat_chk. Hermes (React Native's libhermes.so,
+libjsi.so) and Akamai's libakamaibap.so failed to load without them
+(DB Navigator).
+
+---
+diff --git a/libc/libc-chk.c b/libc/libc-chk.c
+index bfdc771..c631274 100644
+--- a/libc/libc-chk.c
++++ b/libc/libc-chk.c
+@@ -93,6 +93,12 @@ char *bionic___strcpy_chk(char *dest, const char *src, size_t dest_len)
+ 	return strcpy(dest, src);
+ }
+ 
++char *bionic___strncat_chk(char *__restrict dest, const char *__restrict src,
++			   size_t len, size_t dest_len)
++{
++	return strncat(dest, src, len);
++}
++
+ char * bionic___stpncpy_chk(char* __restrict dest, const char* __restrict src, size_t len, size_t dest_len) {
+ 	if (__builtin_expect(len > dest_len, 0)) {
+ 		fprintf(stderr, "stpncpy: prevented write past end of buffer");
+diff --git a/pthread_wrapper/libpthread.c b/pthread_wrapper/libpthread.c
+index 3247a79..72ed84a 100644
+--- a/pthread_wrapper/libpthread.c
++++ b/pthread_wrapper/libpthread.c
+@@ -667,3 +667,10 @@ int bionic_pthread_atfork(void (*prepare)(void), void (*parent)(void), void (*ch
+ {
+ 	return pthread_atfork(prepare, parent, child);
+ }
++
++/* bionic's pthread_atfork in the NDK's libc.a calls this; the handlers are never
++ * unregistered when the library identified by dso is unloaded */
++int bionic___register_atfork(void (*prepare)(void), void (*parent)(void), void (*child)(void), void *dso)
++{
++	return pthread_atfork(prepare, parent, child);
++}
