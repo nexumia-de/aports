@@ -78,6 +78,11 @@ scripts/fetch-published.sh /tmp/apkrepo   # optional: only build what is not pub
 scripts/build.sh /tmp/apkrepo -d
 ```
 
+`build.sh` builds in `mktemp -d`. On the phone `/tmp` is a 3.6 GB RAM
+disk, which `art_standalone` fills while packaging ("No space left on
+device" after about an hour); build it with
+`TMPDIR=$HOME/build-tmp` (on the disk) instead.
+
 The package lands in `/tmp/apkrepo/edge/aarch64/`. The final index step
 fails unless the signing key's public part is in `/etc/apk/keys`
 ("UNTRUSTED signature"); the package itself is complete.
