@@ -78,16 +78,15 @@ Done on 2026-10-28: repository `nexumia-de/aports`, DNS `CNAME`
 `apk.nexumia.de` → `nexumia-de.github.io`, Pages source "GitHub Actions"
 with custom domain `apk.nexumia.de`[^pages-domain], key pair
 `nexumia-de-20261028.rsa` (RSA 4096, created by the owner; public part in
-`keys/`).
+`keys/`), and the environment `apk-signing` with deployment branch
+`main` and the environment secret `APK_SIGNING_KEY`[^environments].
 
 Still to do:
 
-1. The private key as secret `APK_SIGNING_KEY`, best in the environment
-   below. Repository settings → Environments → `apk-signing`:
-   deployment branches "Selected branches" `main`, required reviewer the
-   owner, environment secret `APK_SIGNING_KEY`[^environments]. (A
-   repository secret `APK_SIGNING_KEY` or `ATL_APK_PRIVATE_KEY` also
-   works, without these protections.)
+1. In `apk-signing`: the owner as required reviewer, and "Allow
+   administrators to bypass configured protection rules" off (the
+   agent's token acts as the owner's admin account). Not confirmed on
+   2026-10-28.
 2. "Enforce HTTPS" in the Pages settings once the certificate exists.
 3. Optional: secret `UPDATE_TOKEN` (see `update-check.yml`) so CI builds
    the update pull requests; otherwise the setting "Allow GitHub Actions
