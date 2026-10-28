@@ -1,0 +1,105 @@
+# Builds all packages (aarch64) in alpine:edge and publishes them as a
+# signed apk repository on GitHub Pages (https://apk.nexumia.de/edge);
+# see docs/repository.md. Pull requests only build.
+name: Publish
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # alpine:edge; scripts/ci-build.sh upgrades it to the current edge packages.
+  ALPINE_IMAGE: alpine@sha256:020dfcbaaf4cc1078bf2d9c7ba31a8466e334061dcd2f248001d68f79e52c000
+  # Must match keys/<KEY_NAME>.pub: abuild names the signature after it.
+  KEY_NAME: nexumia-de-20261028.rsa
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 60
+    # Pushes sign in the environment apk-signing: its secret APK_SIGNING_KEY,
+    # deployment branch main and the owner as required reviewer keep the key
+    # away from other branches and need the owner's approval per publish.
+    # Pull requests build in an environment without secrets.
+    environment: ${{ github.event_name == 'pull_request' && 'pull-request' || 'apk-signing' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Signing key
+        if: github.event_name != 'pull_request'
+        env:
+          PRIVATE_KEY: ${{ secrets.APK_SIGNING_KEY || secrets.ATL_APK_PRIVATE_KEY }}
+        run: |
+          if [ -z "$PRIVATE_KEY" ]; then
+            echo "::error::The secret APK_SIGNING_KEY is missing; see docs/repository.md."
+            exit 1
+          fi
+          mkdir -p "$RUNNER_TEMP/keys"
+          printf '%s\n' "$PRIVATE_KEY" >"$RUNNER_TEMP/keys/$KEY_NAME"
+          cp "keys/$KEY_NAME.pub" "$RUNNER_TEMP/keys/"
+
+      - name: Build
+        run: |
+          mkdir -p "$RUNNER_TEMP/keys" out
+          docker run --rm -v "$PWD:/src:ro" -v "$PWD/out:/out" -v "$RUNNER_TEMP/keys:/keys:ro" \
+            "$ALPINE_IMAGE" /src/scripts/ci-build.sh
+          rm -rf "$RUNNER_TEMP/keys"
+
+      # The site URL, with the custom domain once it is set.
+      - id: pages
+        if: github.event_name != 'pull_request'
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - name: Site
+        env:
+          SITE_URL: ${{ steps.pages.outputs.base_url || 'https://apk.nexumia.de' }}
+        run: |
+          url=${SITE_URL%/}
+          mkdir -p site/keys
+          cp -r out/edge site/
+          cp "keys/$KEY_NAME.pub" site/keys/
+          packages=$(cd site/edge/aarch64 && ls *.apk | sed 's/^/<li><code>/; s/$/<\/code><\/li>/')
+          cat >site/index.html <<HTML
+          <!doctype html>
+          <meta charset="utf-8">
+          <title>nexumia-de apk repository</title>
+          <h1>nexumia-de apk repository</h1>
+          <p>Packages for Alpine and postmarketOS edge (aarch64), built from
+          <a href="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}">${GITHUB_REPOSITORY}@${GITHUB_SHA}</a>:</p>
+          <ul>$packages</ul>
+          <p>Setup as root, once:</p>
+          <pre>wget -O /etc/apk/keys/$KEY_NAME.pub $url/keys/$KEY_NAME.pub
+          echo "@nexumia $url/edge" &gt;&gt; /etc/apk/repositories
+          apk add android-translation-layer@nexumia</pre>
+          <p>Updates come with <code>apk upgrade</code>.</p>
+          HTML
+
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        if: github.event_name != 'pull_request'
+        with:
+          path: site
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
