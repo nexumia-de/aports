@@ -87,11 +87,13 @@ Still to do:
    administrators to bypass configured protection rules" off (the
    agent's token acts as the owner's admin account). Not confirmed on
    2026-10-28.
-2. "Enforce HTTPS" in the Pages settings once the certificate exists.
-3. Optional: secret `UPDATE_TOKEN` (see `update-check.yml`) so CI builds
+2. Merge pull request #1; the first publish then waits for the
+   reviewer's approval under Actions.
+3. "Enforce HTTPS" in the Pages settings once the certificate exists.
+4. Optional: secret `UPDATE_TOKEN` (see `update-check.yml`) so CI builds
    the update pull requests; otherwise the setting "Allow GitHub Actions
    to create and approve pull requests" must be on.
-4. On the device, as root:
+5. On the device, as root (the owner runs root commands with `sudo`):
    ```sh
    wget -O /etc/apk/keys/nexumia-de-20261028.rsa.pub https://apk.nexumia.de/keys/nexumia-de-20261028.rsa.pub
    echo "@nexumia https://apk.nexumia.de/edge" >> /etc/apk/repositories
