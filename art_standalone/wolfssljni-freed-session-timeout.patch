@@ -1,0 +1,33 @@
+From: nexumia-de <https://github.com/nexumia-de>
+Subject: wolfssljni: ignore freed sessions when updating session timeouts
+
+SSLSessionContext.setSessionTimeout() walks every cached session and
+sets its native timeout. A session whose WOLFSSL was freed when its
+connection closed throws IllegalStateException("Object has been
+freed"), which escapes to the caller. F-Droid sets the timeout in its
+hostname verifier and crashes as soon as an earlier connection was
+closed (e.g. after a mirror fallback).
+
+Upstream wolfssljni catches this in setNativeTimeout() ("WOLFSSL freed
+on connection close"); this is the minimal backport for the vendored
+copy.
+
+Upstream: https://github.com/wolfSSL/wolfssljni/blob/master/src/java/com/wolfssl/provider/jsse/WolfSSLImplementSSLSession.java
+---
+diff --git a/external/wolfssljni/src/java/com/wolfssl/provider/jsse/WolfSSLImplementSSLSession.java b/external/wolfssljni/src/java/com/wolfssl/provider/jsse/WolfSSLImplementSSLSession.java
+index e5eb1a90..08cd9b40 100644
+--- a/external/wolfssljni/src/java/com/wolfssl/provider/jsse/WolfSSLImplementSSLSession.java
++++ b/external/wolfssljni/src/java/com/wolfssl/provider/jsse/WolfSSLImplementSSLSession.java
+@@ -550,7 +550,11 @@ public class WolfSSLImplementSSLSession implements SSLSession {
+      * @param in timeout in seconds
+      */
+     protected void setNativeTimeout(long in) {
+-        ssl.setSessTimeout(in);
++        try {
++            ssl.setSessTimeout(in);
++        } catch (IllegalStateException e) {
++            /* WOLFSSL freed on connection close */
++        }
+     }
+ 
+ 

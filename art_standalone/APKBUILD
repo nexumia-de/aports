@@ -1,0 +1,125 @@
+# Contributor: nexumia-de <https://github.com/nexumia-de>
+# Alpine's testing/art_standalone (alpinelinux/aports f35539597b0e) plus
+# wolfssljni-freed-session-timeout.patch, which F-Droid needs. Drop this
+# package once Alpine's art_standalone contains the fix.
+pkgname=art_standalone
+pkgver=0_git20261018
+# above any rebuild of the same version in Alpine (r0, r1, ...)
+pkgrel=100
+_commit="a1edfc40e8cea3644d80e4e776d3fa7fc397a1c2"
+pkgdesc="A standalone version of Dalvik with Art build in (nexumia-de: wolfssljni fix)"
+url="https://gitlab.com/android_translation_layer/art_standalone"
+arch="aarch64"
+license="Apache-2.0"
+depends="
+	java-cacerts
+	wolfssl-jni
+	"
+# bash is used by /usr/bin/dx
+depends_dev="
+	$pkgname=$pkgver-r$pkgrel
+	bash
+	"
+case "$CARCH" in
+	aarch64|armv7) depends_dev="$depends_dev vixl-dev" ;;
+esac
+makedepends="$depends_dev
+	bionic_translation-dev
+	bsd-compat-headers
+	expat-dev
+	icu-dev
+	java-common
+	libbsd-dev
+	libcap-dev
+	libpng-dev
+	libselinux-dev
+	libunwind-dev
+	lz4-dev
+	meson
+	openjdk8-jdk
+	openssl-dev
+	python3
+	valgrind-dev
+	wolfssl-jni-dev
+	xz-dev
+	zip
+	zlib-dev
+	"
+somask="
+	libart-compiler.so
+	libart-dexlayout.so
+	libart.so
+	libartbase.so
+	libartpalette.so
+	libbacktrace.so
+	libbase.so
+	libcutils.so
+	libdexfile.so
+	liblog.so
+	libnativebridge.so
+	libnativehelper.so
+	libopenjdkjvm.so
+	libprofile.so
+	libsigchain.so
+	libunwind.so
+	libutils.so
+	libziparchive.so
+	"
+subpackages="
+	libandroidfw
+	libandroidfw-dev:libandroidfw_dev
+	adbd
+	$pkgname-dev
+	"
+source="https://gitlab.com/android_translation_layer/art_standalone/-/archive/$_commit/art_standalone-$_commit.tar.gz
+	wolfssljni-freed-session-timeout.patch
+	"
+# No tests; no -dbg subpackage, it would be most of the repository's size
+options="!check !dbg"
+builddir="$srcdir/art_standalone-$_commit"
+
+build() {
+	make ____PREFIX=/usr ____LIBDIR=lib
+	make adbd
+}
+
+package() {
+	make \
+		____PREFIX="$pkgdir"/usr \
+		____INSTALL_ETC="$pkgdir"/etc \
+		____LIBDIR=lib \
+		install
+	make \
+		____PREFIX="$pkgdir"/usr \
+		install_adbd
+}
+
+dev() {
+	default_dev
+
+	amove \
+		usr/lib/java/core-all_classes.jar \
+		usr/lib/java/dx.jar \
+		usr/bin/dx
+}
+
+libandroidfw() {
+	depends=""
+	amove usr/lib/art/libandroidfw.so
+}
+
+libandroidfw_dev() {
+	depends="libandroidfw"
+
+	amove usr/include/androidfw/androidfw_c_api.h
+}
+
+adbd() {
+	depends="$pkgname"
+	amove usr/bin/adbd
+}
+
+sha512sums="
+ea16e95d3c1f5282757a5110691c0ce759561938709f2e8c081bdbaf72a634a494813775765de801ac72178f2ee6accef10071d380fb2966cfff4c709b2c9488  art_standalone-a1edfc40e8cea3644d80e4e776d3fa7fc397a1c2.tar.gz
+723af5e30d13b597fcd6f710f05ec565f68a8b9349556b2ca37facef663d8e9975e6e31b7549a08c09e6101610683bec652b8290fe57551f5ff5256fe142eea0  wolfssljni-freed-session-timeout.patch
+"

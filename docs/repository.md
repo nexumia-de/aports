@@ -33,8 +33,9 @@ Flatpak remote's address.
 ```
 <package>/APKBUILD          pinned _commit + sha512sums (Alpine style)
 scripts/update.sh           moves the pin to the newest commit of the source branch
-scripts/build.sh DEST       abuild for every package into DEST/edge/<arch>/ (also on the phone)
-scripts/ci-build.sh         root in alpine:edge: edge/testing, apk upgrade, alpine-sdk, key, build.sh -F -r
+scripts/build.sh DEST       abuild for every package not yet in DEST/edge/<arch>/, then index (also on the phone)
+scripts/fetch-published.sh DEST  the packages published now into DEST/edge/<arch>/, so they are not rebuilt
+scripts/ci-build.sh         root in alpine:edge: edge/testing, apk upgrade, alpine-sdk, keys, build.sh -F -r
 keys/<name>.rsa.pub         public signing key
 
 publish.yml       pull request: build with a throwaway key, publish nothing
@@ -48,6 +49,13 @@ dependabot.yml    weekly: GitHub Actions SHAs
 - Packages are built for aarch64 on `ubuntu-24.04-arm` in `alpine:edge`
   (pinned by digest, then `apk upgrade`d so packages link against
   current edge, like the devices).
+- Only packages whose `<pkgname>-<pkgver>-r<pkgrel>.apk` is not yet
+  published are built; the others are downloaded from the site and
+  indexed again. A changed APKBUILD therefore needs a new `pkgver` or
+  `pkgrel`, like in Alpine. A removed package directory drops its
+  packages on the next publish. The first build of `art_standalone`
+  takes most of an hour (job timeout 180 minutes); after that a publish
+  rebuilds only what changed.
 - The site holds only the newest build; apk keeps installed versions,
   but the repository has no older ones to downgrade to.
 - The repository name is `edge` (the Alpine branch the packages are
@@ -58,6 +66,7 @@ dependabot.yml    weekly: GitHub Actions SHAs
 | Package | Source | Notes |
 |---|---|---|
 | `android-translation-layer` | `nexumia-de/android_translation_layer`, branch `phosh`, as GitHub archive of the pinned commit | Follows Alpine's APKBUILD and upstream's nightly one: JDK 17, maven and `-Ddownload_tool_deps=true` (`options="net"`) for `tools/jni_upcall_gen`; `gtk4-layer-shell-dev` for the on-screen keyboard. Dependencies `art_standalone`, `bionic_translation`, `libopensles-standalone` from Alpine testing. Version `0_git<commit time, UTC>`. |
+| `art_standalone` (with `libandroidfw`, `adbd`, `-dev`) | Alpine's `testing/art_standalone` (alpinelinux/aports `f35539597b0e`), same source commit | Plus `wolfssljni-freed-session-timeout.patch`: art_standalone's vendored wolfssljni throws `IllegalStateException: Object has been freed` when the TLS session timeout is set after a connection closed, which crashes F-Droid; upstream wolfssljni already catches it. `pkgrel=100` keeps it above Alpine rebuilds of the same version; no `-dbg`. Not updated by `update-check.yml`. **Temporary**: once Alpine's package has the fix, delete the directory and switch devices back with `apk add art_standalone libandroidfw adbd` (without the tag). |
 
 # Building on the phone
 
@@ -65,8 +74,14 @@ With the makedepends installed (as `claude`, `-d` skips the check of the
 runtime dependency `libopensles-standalone`):
 
 ```sh
+scripts/fetch-published.sh /tmp/apkrepo   # optional: only build what is not published
 scripts/build.sh /tmp/apkrepo -d
 ```
+
+`build.sh` builds in `mktemp -d`. On the phone `/tmp` is a 3.6 GB RAM
+disk, which `art_standalone` fills while packaging ("No space left on
+device" after about an hour); build it with
+`TMPDIR=$HOME/build-tmp` (on the disk) instead.
 
 The package lands in `/tmp/apkrepo/edge/aarch64/`. The final index step
 fails unless the signing key's public part is in `/etc/apk/keys`

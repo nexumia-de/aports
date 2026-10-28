@@ -20,5 +20,7 @@ else
 fi
 export PACKAGER_PRIVKEY
 cp "$PACKAGER_PRIVKEY.pub" /etc/apk/keys/
+# The packages fetched by fetch-published.sh are signed with the real key.
+cp /src/keys/*.pub /etc/apk/keys/
 
 /src/scripts/build.sh /out -F -r
