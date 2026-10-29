@@ -1,13 +1,14 @@
 # Contributor: nexumia-de <https://github.com/nexumia-de>
 # Alpine's testing/art_standalone (alpinelinux/aports f35539597b0e) plus
-# wolfssljni-freed-session-timeout.patch, which F-Droid needs, and
+# wolfssljni-freed-session-timeout.patch and
+# wolfssljni-session-store-lock.patch, which F-Droid needs, and
 # lambda-metafactory.patch, without which java.time and other libcore
 # code using lambdas fails. Drop this package once Alpine's
 # art_standalone contains the fixes.
 pkgname=art_standalone
 pkgver=0_git20261018
 # above any rebuild of the same version in Alpine (r0, r1, ...)
-pkgrel=101
+pkgrel=102
 _commit="a1edfc40e8cea3644d80e4e776d3fa7fc397a1c2"
 pkgdesc="A standalone version of Dalvik with Art build in (nexumia-de: wolfssljni and lambda fixes)"
 url="https://gitlab.com/android_translation_layer/art_standalone"
@@ -76,6 +77,7 @@ subpackages="
 source="https://gitlab.com/android_translation_layer/art_standalone/-/archive/$_commit/art_standalone-$_commit.tar.gz
 	wolfssljni-freed-session-timeout.patch
 	lambda-metafactory.patch
+	wolfssljni-session-store-lock.patch
 	"
 # No tests; no -dbg subpackage, it would be most of the repository's size
 options="!check !dbg"
@@ -126,4 +128,5 @@ sha512sums="
 ea16e95d3c1f5282757a5110691c0ce759561938709f2e8c081bdbaf72a634a494813775765de801ac72178f2ee6accef10071d380fb2966cfff4c709b2c9488  art_standalone-a1edfc40e8cea3644d80e4e776d3fa7fc397a1c2.tar.gz
 723af5e30d13b597fcd6f710f05ec565f68a8b9349556b2ca37facef663d8e9975e6e31b7549a08c09e6101610683bec652b8290fe57551f5ff5256fe142eea0  wolfssljni-freed-session-timeout.patch
 33e110edab109a10e1947b04d9dee2bd804ac07f766c008b7fcaf805de761798ecaaa183cd60ee2fa1cfc8f80f7ed616ff18384a4f0a229084b8cd8c5d7c1a4e  lambda-metafactory.patch
+2a337e67e35fb0367b63565e33cc7331ce9029d2021ab6a8ce1b23b3f60b21611e5d53612aaf63e612d56a1cf75c5804c7135dbf5d4937bd5bd7d39764cc26e8  wolfssljni-session-store-lock.patch
 "
