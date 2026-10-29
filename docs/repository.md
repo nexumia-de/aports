@@ -33,7 +33,7 @@ Flatpak remote's address.
 ```
 <package>/APKBUILD          pinned _commit + sha512sums (Alpine style)
 scripts/update.sh           moves the pin to the newest commit of the source branch
-scripts/build.sh DEST       abuild for every package not yet in DEST/edge/<arch>/, then index (also on the phone)
+scripts/build.sh DEST       abuild for every package not yet in DEST/edge/<arch>/, dependencies first, then index (also on the phone)
 scripts/fetch-published.sh DEST  the packages published now into DEST/edge/<arch>/, so they are not rebuilt
 scripts/ci-build.sh         root in alpine:edge: edge/testing, apk upgrade, alpine-sdk, keys, build.sh -F -r
 keys/<name>.rsa.pub         public signing key
@@ -65,9 +65,31 @@ dependabot.yml    weekly: GitHub Actions SHAs
 
 | Package | Source | Notes |
 |---|---|---|
-| `android-translation-layer` | `nexumia-de/android_translation_layer`, branch `phosh`, as GitHub archive of the pinned commit | Follows Alpine's APKBUILD and upstream's nightly one: JDK 17, maven and `-Ddownload_tool_deps=true` (`options="net"`) for `tools/jni_upcall_gen`; `gtk4-layer-shell-dev` for the on-screen keyboard. Dependencies `art_standalone`, `bionic_translation`, `libopensles-standalone` from Alpine testing. Version `0_git<commit time, UTC>`. |
-| `art_standalone` (with `libandroidfw`, `adbd`, `-dev`) | Alpine's `testing/art_standalone` (alpinelinux/aports `f35539597b0e`), same source commit | Plus `wolfssljni-freed-session-timeout.patch`: art_standalone's vendored wolfssljni throws `IllegalStateException: Object has been freed` when the TLS session timeout is set after a connection closed, which crashes F-Droid; upstream wolfssljni already catches it. Plus `wolfssljni-session-store-lock.patch`: its session store (a `LinkedHashMap`) is used by connections on several threads without a lock, so setting the timeout threw `ConcurrentModificationException` and crashed F-Droid while downloading; upstream wolfssljni guards it with `storeLock`. Plus `lambda-metafactory.patch`: libcore is compiled with dx, which keeps the `invokedynamic` of libcore's own lambdas, but `LambdaMetafactory` is Android's stub that returns null, so e.g. `java.time.format.DateTimeFormatter` failed in its static initializer (DB Navigator); the patch implements the metafactory with `java.lang.reflect.Proxy` and lets ART pass mixed static arguments to `altMetafactory(..., Object...)`. `pkgrel=100` (101 since the lambda patch, 102 since the store lock) keeps it above Alpine rebuilds of the same version; no `-dbg`. Not updated by `update-check.yml`. **Temporary**: once Alpine's package has the fixes, delete the directory and switch devices back with `apk add art_standalone libandroidfw adbd` (without the tag). |
-| `bionic_translation` (with `-dev`, `-dbg`) | Alpine's `testing/bionic_translation` (alpinelinux/aports `f35539597b0e`), same source commit | Plus `register-atfork-strncat-chk.patch`: `__register_atfork` (what the NDK's `pthread_atfork` calls) and `__strncat_chk`, without which Hermes (React Native) and Akamai's library fail to load. `pkgrel=100`; aarch64 only. Not updated by `update-check.yml`. **Temporary** like `art_standalone`; switch back with `apk add bionic_translation` (without the tag). |
+| `android-translation-layer` | `nexumia-de/android_translation_layer`, branch `phosh`, as GitHub archive of the pinned commit | Follows Alpine's APKBUILD and upstream's nightly one: JDK 17, maven and `-Ddownload_tool_deps=true` (`options="net"`) for `tools/jni_upcall_gen`; `gtk4-layer-shell-dev` for the on-screen keyboard. Dependencies `art_standalone` and `bionic_translation` from this repository, `libopensles-standalone` from Alpine testing. Version `0_git<commit time, UTC>`. |
+| `art_standalone` (with `libandroidfw`, `adbd`, `-dev`) | `nexumia-de/art_standalone`, branch `phosh`, as GitHub archive of the pinned commit | APKBUILD from Alpine's `testing/art_standalone` (alpinelinux/aports `f35539597b0e`). The fork's `phosh` is upstream plus three fixes as commits: wolfssljni ignores sessions freed on connection close when setting the TLS session timeout (`IllegalStateException: Object has been freed` crashed F-Droid), wolfssljni guards its session store with a lock (`ConcurrentModificationException` crashed F-Droid while downloading), and `LambdaMetafactory` builds libcore's own lambdas with `java.lang.reflect.Proxy` (dx keeps their `invokedynamic`; `java.time.format.DateTimeFormatter` failed for DB Navigator). No `-dbg`. Version `0_git<commit time, UTC>`, above Alpine's `0_git<date>` of the same upstream state. |
+| `bionic_translation` (with `-dev`, `-dbg`) | `nexumia-de/bionic_translation`, branch `phosh`, as GitHub archive of the pinned commit | APKBUILD from Alpine's `testing/bionic_translation` (alpinelinux/aports `f35539597b0e`). The fork's `phosh` is upstream plus `__register_atfork` (what the NDK's `pthread_atfork` calls) and `__strncat_chk`, without which Hermes (React Native) and Akamai's library fail to load. aarch64 only. Version like `art_standalone`. |
+
+# From a fix to the phone
+
+All three packages are built from a fork in `nexumia-de` with the same
+branches: `master` identical to upstream on GitLab, `phosh` (default)
+upstream plus the fork's fixes as commits. No package carries patches
+here, so a fix is a pull request in the fork, not a `.patch` file in
+this repository.
+
+1. Upstream changes: the fork's `.github/workflows/sync-upstream.yml`
+   (daily 02:17 UTC) mirrors GitLab's `master` and opens a pull request
+   `master` -> `phosh`; the owner merges it with a merge commit.
+2. Fixes: a pull request into the fork's `phosh`; the owner merges it.
+3. `update-check.yml` (daily 03:41 UTC) pins the newest `phosh` commit
+   of each package in a pull request `update/<package>`; the owner
+   merges it. For an immediate update run `scripts/update.sh <package>`
+   on such a branch and open the pull request by hand.
+4. The push to `main` publishes; devices get it with `apk upgrade`.
+
+A changed upstream build (new dependency, new file to install) shows up
+as a failing build of the pin pull request; Alpine's APKBUILD in
+`testing/` is the reference for the fix.
 
 # Building on the phone
 

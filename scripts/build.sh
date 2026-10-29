@@ -25,8 +25,13 @@ arch=$(apk --print-arch)
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 mkdir -p "$work/edge"
-for apkbuild in "$root"/*/APKBUILD; do
-	pkg=$(basename "$(dirname "$apkbuild")")
+# Dependencies first, so a package builds against the ones built here:
+# art_standalone needs bionic_translation, android-translation-layer both.
+first="bionic_translation art_standalone"
+rest=$(cd "$root" && ls -d */APKBUILD | sed 's,/APKBUILD$,,' | grep -vxF -e bionic_translation -e art_standalone)
+for pkg in $first $rest; do
+	apkbuild=$root/$pkg/APKBUILD
+	[ -f "$apkbuild" ] || continue
 	# APKBUILDs use variables abuild sets, like $srcdir
 	apk=$(set +u && . "$apkbuild" && echo "$pkgname-$pkgver-r$pkgrel.apk")
 	if [ -f "$dest/edge/$arch/$apk" ]; then

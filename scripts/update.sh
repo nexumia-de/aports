@@ -15,14 +15,18 @@ apkbuild=$root/$pkg/APKBUILD
 case $pkg in
 android-translation-layer)
 	repo=nexumia-de/android_translation_layer
-	branch=phosh
 	archive=android_translation_layer
+	;;
+art_standalone | bionic_translation)
+	repo=nexumia-de/$pkg
+	archive=$pkg
 	;;
 *)
 	echo "no update rule for $pkg" >&2
 	exit 1
 	;;
 esac
+branch=phosh
 
 old=$(sed -n 's/^_commit="\(.*\)"$/\1/p' "$apkbuild")
 new=$(gh api "repos/$repo/commits/$branch" --jq .sha)
