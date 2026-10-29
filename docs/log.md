@@ -8,4 +8,5 @@
 * **art_standalone r102**: `wolfssljni-session-store-lock.patch` guards wolfssljni's session store with a lock; F-Droid crashed with `ConcurrentModificationException` in `WolfSSLAuthStore.updateTimeouts` while downloading over several connections ([repository](repository.md#packages)).
 
 ## 2026-10-29
+* **ATL with libadwaita**: `android-translation-layer` builds with `libadwaita-dev`, needed from nexumia-de/android_translation_layer pull request #20 on (the page that asks before installing an opened APK).
 * **Forks instead of patches**: `art_standalone` and `bionic_translation` are built from the forks `nexumia-de/art_standalone` and `nexumia-de/bionic_translation` (branch `phosh`, the former patches as commits), pinned and updated by `scripts/update.sh` and the daily update check like `android-translation-layer`; no more `pkgrel=10x`. Each fork mirrors upstream daily and opens a pull request into `phosh`. `scripts/build.sh` builds dependencies first ([apk repository](repository.md#from-a-fix-to-the-phone)).
