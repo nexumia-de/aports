@@ -7,8 +7,8 @@ GitHub Actions and published as a signed apk repository at
 | Package | Source |
 |---|---|
 | `android-translation-layer` | [nexumia-de/android_translation_layer](https://github.com/nexumia-de/android_translation_layer), branch `phosh`: Android Translation Layer with the fixes for Phosh |
-| `art_standalone` | Alpine's package plus two wolfssljni fixes that F-Droid needs in ATL and a fix for lambdas in the Java core library (`java.time`); temporary, until Alpine has them ([details](docs/repository.md#packages)) |
-| `bionic_translation` | Alpine's package plus two functions that current NDK libraries need (React Native, DB Navigator); temporary, until Alpine has them ([details](docs/repository.md#packages)) |
+| `art_standalone` | [nexumia-de/art_standalone](https://github.com/nexumia-de/art_standalone), branch `phosh`: upstream plus two wolfssljni fixes that F-Droid needs in ATL and a fix for lambdas in the Java core library (`java.time`) ([details](docs/repository.md#packages)) |
+| `bionic_translation` | [nexumia-de/bionic_translation](https://github.com/nexumia-de/bionic_translation), branch `phosh`: upstream plus two functions that current NDK libraries need (React Native, DB Navigator) ([details](docs/repository.md#packages)) |
 
 ## Use
 
