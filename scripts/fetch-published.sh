@@ -22,7 +22,7 @@ mkdir -p "$dir"
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
-if ! curl -sSfL -m 60 -o "$tmp/APKINDEX.tar.gz" "$url/edge/$arch/APKINDEX.tar.gz"; then
+if ! curl -sSfL --retry 5 --retry-delay 10 -m 60 -o "$tmp/APKINDEX.tar.gz" "$url/edge/$arch/APKINDEX.tar.gz"; then
 	echo "No published repository at $url, building everything"
 	exit 0
 fi
@@ -42,5 +42,5 @@ awk -F: '
 		continue
 	fi
 	echo "Fetching $file"
-	curl -sSfL -m 600 -o "$dir/$file" "$url/edge/$arch/$file"
+	curl -sSfL --retry 5 --retry-delay 10 -m 600 -o "$dir/$file" "$url/edge/$arch/$file"
 done
