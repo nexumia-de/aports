@@ -10,3 +10,6 @@
 ## 2026-10-29
 * **ATL with libadwaita**: `android-translation-layer` builds with `libadwaita-dev`, needed from nexumia-de/android_translation_layer pull request #20 on (the page that asks before installing an opened APK).
 * **Forks instead of patches**: `art_standalone` and `bionic_translation` are built from the forks `nexumia-de/art_standalone` and `nexumia-de/bionic_translation` (branch `phosh`, the former patches as commits), pinned and updated by `scripts/update.sh` and the daily update check like `android-translation-layer`; no more `pkgrel=10x`. Each fork mirrors upstream daily and opens a pull request into `phosh`. `scripts/build.sh` builds dependencies first ([apk repository](repository.md#from-a-fix-to-the-phone)).
+
+## 2026-11-02
+* **libopensles-standalone from upstream**: built here from upstream's newest commit on GitLab (branch `known_working_desktop_build`) instead of Alpine testing's 2025-09-13 snapshot, without a fork. `scripts/update.sh` learns GitLab sources, so the daily update check moves the pin; `scripts/build.sh` builds it before `android-translation-layer` ([apk repository](repository.md#packages)).

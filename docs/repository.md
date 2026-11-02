@@ -65,13 +65,18 @@ dependabot.yml    weekly: GitHub Actions SHAs
 
 | Package | Source | Notes |
 |---|---|---|
-| `android-translation-layer` | `nexumia-de/android_translation_layer`, branch `phosh`, as GitHub archive of the pinned commit | Follows Alpine's APKBUILD and upstream's nightly one: JDK 17, maven and `-Ddownload_tool_deps=true` (`options="net"`) for `tools/jni_upcall_gen`; `gtk4-layer-shell-dev` for the on-screen keyboard. Dependencies `art_standalone` and `bionic_translation` from this repository, `libopensles-standalone` from Alpine testing. Version `0_git<commit time, UTC>`. |
+| `android-translation-layer` | `nexumia-de/android_translation_layer`, branch `phosh`, as GitHub archive of the pinned commit | Follows Alpine's APKBUILD and upstream's nightly one: JDK 17, maven and `-Ddownload_tool_deps=true` (`options="net"`) for `tools/jni_upcall_gen`; `gtk4-layer-shell-dev` for the on-screen keyboard. Dependencies `art_standalone`, `bionic_translation` and `libopensles-standalone` from this repository. Version `0_git<commit time, UTC>`. |
 | `art_standalone` (with `libandroidfw`, `adbd`, `-dev`) | `nexumia-de/art_standalone`, branch `phosh`, as GitHub archive of the pinned commit | APKBUILD from Alpine's `testing/art_standalone` (alpinelinux/aports `f35539597b0e`). The fork's `phosh` is upstream plus three fixes as commits: wolfssljni ignores sessions freed on connection close when setting the TLS session timeout (`IllegalStateException: Object has been freed` crashed F-Droid), wolfssljni guards its session store with a lock (`ConcurrentModificationException` crashed F-Droid while downloading), and `LambdaMetafactory` builds libcore's own lambdas with `java.lang.reflect.Proxy` (dx keeps their `invokedynamic`; `java.time.format.DateTimeFormatter` failed for DB Navigator). No `-dbg`. Version `0_git<commit time, UTC>`, above Alpine's `0_git<date>` of the same upstream state. |
 | `bionic_translation` (with `-dev`, `-dbg`) | `nexumia-de/bionic_translation`, branch `phosh`, as GitHub archive of the pinned commit | APKBUILD from Alpine's `testing/bionic_translation` (alpinelinux/aports `f35539597b0e`). The fork's `phosh` is upstream plus `__register_atfork` (what the NDK's `pthread_atfork` calls) and `__strncat_chk`, without which Hermes (React Native) and Akamai's library fail to load. aarch64 only. Version like `art_standalone`. |
+| `libopensles-standalone` (with `-dev`, `-dbg`) | `android_translation_layer/libopensles-standalone` on GitLab, branch `known_working_desktop_build` (upstream's only branch), as GitLab archive of the pinned commit | APKBUILD from Alpine's `testing/libopensles-standalone` (alpinelinux/aports `3044a813`), which is stuck at upstream's 2025-09-13 state; upstream has since added an SDL `AudioRecorder` backend (recording through OpenSL ES from native code; Java's `AudioRecord` in ATL uses ALSA and does not go through it). No fork, as there are no fixes to carry; one is made when a fix is needed. aarch64 only. Version like `art_standalone`. |
 
 # From a fix to the phone
 
-All three packages are built from a fork in `nexumia-de` with the same
+`libopensles-standalone` carries no fixes and is pinned straight to
+upstream on GitLab: only step 3 below applies to it, and
+`scripts/update.sh` reads GitLab's public API without a token.
+
+The other three packages are built from a fork in `nexumia-de` with the same
 branches: `master` identical to upstream on GitLab, `phosh` (default)
 upstream plus the fork's fixes as commits. No package carries patches
 here, so a fix is a pull request in the fork, not a `.patch` file in
@@ -81,8 +86,8 @@ this repository.
    (daily 02:17 UTC) mirrors GitLab's `master` and opens a pull request
    `master` -> `phosh`; the owner merges it with a merge commit.
 2. Fixes: a pull request into the fork's `phosh`; the owner merges it.
-3. `update-check.yml` (daily 03:41 UTC) pins the newest `phosh` commit
-   of each package in a pull request `update/<package>`; the owner
+3. `update-check.yml` (daily 03:41 UTC) pins the newest commit of each
+   package's source branch in a pull request `update/<package>`; the owner
    merges it. For an immediate update run `scripts/update.sh <package>`
    on such a branch and open the pull request by hand.
 4. The push to `main` publishes; devices get it with `apk upgrade`.
@@ -138,6 +143,8 @@ Still to do:
    echo "@nexumia https://apk.nexumia.de/edge" >> /etc/apk/repositories
    apk add android-translation-layer@nexumia
    ```
+   A device that already has Alpine's `libopensles-standalone` switches
+   once with `apk add libopensles-standalone@nexumia`.
    apk takes packages from a tagged repository only when they are
    requested with the tag, and keeps them there on `apk upgrade`, even if
    the distribution has a newer version.[^apk-tags]
