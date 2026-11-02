@@ -26,9 +26,10 @@ work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 mkdir -p "$work/edge"
 # Dependencies first, so a package builds against the ones built here:
-# art_standalone needs bionic_translation, android-translation-layer both.
-first="bionic_translation art_standalone"
-rest=$(cd "$root" && ls -d */APKBUILD | sed 's,/APKBUILD$,,' | grep -vxF -e bionic_translation -e art_standalone)
+# art_standalone needs bionic_translation, android-translation-layer all
+# three ("abuild -r" installs depends too).
+first="bionic_translation art_standalone libopensles-standalone"
+rest=$(cd "$root" && ls -d */APKBUILD | sed 's,/APKBUILD$,,' | grep -vxF -e bionic_translation -e art_standalone -e libopensles-standalone)
 for pkg in $first $rest; do
 	apkbuild=$root/$pkg/APKBUILD
 	[ -f "$apkbuild" ] || continue

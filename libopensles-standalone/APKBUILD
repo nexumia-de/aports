@@ -1,0 +1,41 @@
+# Contributor: nexumia-de <https://github.com/nexumia-de>
+# Alpine's testing/libopensles-standalone (alpinelinux/aports 3044a813),
+# built from upstream's newest commit instead of Alpine's 2025-09-13
+# snapshot. No fork: there are no fixes to carry. _commit and pkgver are
+# updated by scripts/update.sh.
+pkgname=libopensles-standalone
+pkgver=0_git20261025144511
+pkgrel=0
+_commit="c6982620c7dadeb90220b23c575b25eeffda765f"
+pkgdesc="A lightly patched version of Google's libOpenSLES implementation"
+url="https://gitlab.com/android_translation_layer/libopensles-standalone"
+arch="aarch64"
+license="Apache-2.0"
+makedepends="
+	libsndfile-dev
+	meson
+	openjdk8-jdk
+	sdl2-dev
+	"
+subpackages="$pkgname-dev $pkgname-dbg"
+source="https://gitlab.com/android_translation_layer/libopensles-standalone/-/archive/$_commit/libopensles-standalone-$_commit.tar.gz"
+options="!check" # No tests
+builddir="$srcdir/libopensles-standalone-$_commit"
+
+build() {
+	abuild-meson \
+		. output
+	meson compile -C output
+}
+
+check() {
+	meson test --print-errorlogs -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+}
+
+sha512sums="
+9c045c6c361bb7e79e31ce5ba12d23e7310763396b5152aea31869e6f957fab1bd4e649dad99ce800c3f6ea354d7ee43ab04a65e24b8057483b338df4c7d283f  libopensles-standalone-c6982620c7dadeb90220b23c575b25eeffda765f.tar.gz
+"
