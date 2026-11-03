@@ -4,9 +4,9 @@
 # and __strncat_chk, which DB Navigator's native libraries need. _commit
 # and pkgver are updated by scripts/update.sh.
 pkgname=bionic_translation
-pkgver=0_git20261029052657
+pkgver=0_git20261102192202
 pkgrel=0
-_commit="2465522636e6ed5a79959b3b48ea0c248917d966"
+_commit="5ea020a02c28e4fd2e45af35c0f55ba3ee43d86b"
 pkgdesc="A set of libraries for loading bionic-linked .so files on musl/glibc (nexumia-de fork)"
 url="https://github.com/nexumia-de/bionic_translation"
 arch="aarch64"
@@ -40,5 +40,5 @@ package() {
 }
 
 sha512sums="
-4fb7be6b767b3cfb4db77a96cff7b3f096cff20b697f8ccd72fbe0ae7eb3223ac3a855c17b7781e731c8411fe2e349b1cea0c2a7a49c4b63955af3f6c459d87f  bionic_translation-2465522636e6ed5a79959b3b48ea0c248917d966.tar.gz
+ba318698bcab0fc62471866e7789759e3b8f2e4ad24330a3cd1f70ab47b09fb779d87aa23e92efc380408c5a71e328ed3829150a4cfc9be24ae8baa9928dba2b  bionic_translation-5ea020a02c28e4fd2e45af35c0f55ba3ee43d86b.tar.gz
 "
