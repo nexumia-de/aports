@@ -1,4 +1,4 @@
-@../phosh-toolkit/AGENTS.md
+@../phosh-toolkit/agents/core.md
 
 # aports
 
@@ -7,16 +7,6 @@ one signed apk repository on GitHub Pages: `https://apk.nexumia.de/edge`,
 added on devices with the tag `@nexumia`. Like Alpine's own aports, the
 sources stay in their repositories; each APKBUILD pins an exact commit.
 Knowledge of this repository: [docs/index.md](docs/index.md).
-
-## Which shared rules apply
-
-This is a distribution repository like `phosh-apps`, not an app. Of the
-shared rules in ../phosh-toolkit/AGENTS.md these do **not** apply: UI,
-design, metadata, Flatpak workflow, changelog fragments and
-`release.toml`, REUSE compliance (as in `phosh-apps`), and the milestone
-layout. Everything else applies:
-English, knowledge in `docs/`, pinned dependencies, network rules, pull
-requests and CI.
 
 ## Rules
 
@@ -27,4 +17,3 @@ requests and CI.
   workflow's `KEY_NAME` uses.
 - Before a pull request, build the changed package on the phone with
   `scripts/build.sh` (see [docs/repository.md](docs/repository.md)).
-- Do not merge; merging stays with the owner.
