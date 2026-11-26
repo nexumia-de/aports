@@ -4,9 +4,9 @@
 # lambda fixes F-Droid and DB Navigator need. _commit and pkgver are
 # updated by scripts/update.sh.
 pkgname=art_standalone
-pkgver=0_git20261119212852
+pkgver=0_git20261125201336
 pkgrel=0
-_commit="f9671fd286d575f060ffa6ac0e2eb9c26b939172"
+_commit="689a7c6fb04a1c81f5e5fc984fa8975db79df561"
 pkgdesc="A standalone version of Dalvik with Art build in (nexumia-de fork)"
 url="https://github.com/nexumia-de/art_standalone"
 arch="aarch64"
@@ -118,5 +118,5 @@ adbd() {
 }
 
 sha512sums="
-457441276efb67f83c9fd6dc794577a0b8b952c1a1992966aec822116f090017d055fea4cecced0a5454fda2350f77417dc61ce0f32ac6688fcfd15c6b146aef  art_standalone-f9671fd286d575f060ffa6ac0e2eb9c26b939172.tar.gz
+58b3fcff120abeea0532737550d3230b88c5343b47467a3cd23dea5fbbec170a47706cd1a16154b4b6e6c5c72b08ae53471ac18dce475540db201104755a6d1f  art_standalone-689a7c6fb04a1c81f5e5fc984fa8975db79df561.tar.gz
 "
