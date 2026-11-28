@@ -4,9 +4,9 @@
 # tools/jni_upcall_gen). _commit and pkgver are updated by
 # scripts/update.sh.
 pkgname=android-translation-layer
-pkgver=0_git20261126172716
+pkgver=0_git20261128100113
 pkgrel=0
-_commit="f5834966e6ca90a409e44c5c1c988c0e4e594851"
+_commit="fcadf5ba0079ed75f3aea99d035891c3d295743b"
 pkgdesc="A translation layer for running Android apps on a Linux system (nexumia-de Phosh fork)"
 url="https://github.com/nexumia-de/android_translation_layer"
 arch="aarch64"
@@ -57,5 +57,5 @@ package() {
 }
 
 sha512sums="
-8c0d57e87ad5922992aa2c9b275c4ae88a3c50b9dc2213e5e518884539f889e486cb9d63d20d9a23fe21f9acc66e4413e4760587646ea5e75f5e2f5f3fc3954b  android_translation_layer-f5834966e6ca90a409e44c5c1c988c0e4e594851.tar.gz
+5cfe254468f64ec4a93d3d3ff5309ec3734278bf67ddb223004b9dfd5cf23b02d5827a3446a5fcd9ceee03e7d2d9e18a9a8bcf36f61d128ee4e4d4d75d3ec0d3  android_translation_layer-fcadf5ba0079ed75f3aea99d035891c3d295743b.tar.gz
 "
